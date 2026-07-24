@@ -1,22 +1,28 @@
 # Clowder
 
-Clowder is a local development methodology and thin Codex launcher. It coordinates a Product Manager, Architect, Developer, Tester, and Reviewer around 1 Feature at a time, while Jira, Git, pull requests, CI, and versioned artifacts remain the durable sources of truth.
+> # clowder <small>*noun*</small>
+>
+> <kbd>plural</kbd>&ensp;**-s**
+>
+> : a group of cats
 
-The current implementation provides the project contract, role definitions, artifact templates, schemas, deterministic feature setup and validation scripts, and fixture-driven checks. Clowder itself is kept as a working directory during development. Validation runs against a separate consumer repository.
+**Clowder** combines a local development methodology with a thin Codex launcher. It coordinates a group of Agents (including a **Product Manager**, an **Architect**, a **Developer**, a **Tester**, and a **Reviewer**) via an **Orchestrator** to work around **1 Feature at a time**, while Jira, Git, pull requests, CI, and versioned artifacts remain the **durable sources of truth** and the user remains as the **Human-in-the-Loop (HITL)**.
 
 ![Clowder Cover](assets/clowder-cover.png)
 
+The current implementation provides the project contract, role definitions, artifact templates, schemas, deterministic feature setup and validation scripts, and fixture-driven checks. Clowder itself is kept as a **working directory** during development. Validation runs against a **separate consumer repository**.
+
 ## Install Clowder
 
-Install Node.js before installing Clowder.
+Install **Node.js** before installing Clowder.
 
-Install the pinned Node.js runtime dependencies, 5 role definitions, 3 native Clowder skills, and 16 bundled upstream skills into the user Codex directory, after reviewing the proposed changes:
+Install the **pinned Node.js runtime dependencies**, 5 role definitions, 3 native Clowder skills, and 16 bundled upstream skills into the user Codex directory, after reviewing the proposed changes:
 
 ```sh
 scripts/install.sh --codex-home /absolute/path/to/.codex
 ```
 
-The 16 upstream skills are authored by **Matt Pocock** and sourced from the [Matt Pocock Skills Repository](https://github.com/mattpocock/skills). Clowder packages an integrity-locked snapshot under the upstream MIT License. See [Third-Party Notices](THIRD_PARTY_NOTICES.md).
+The 16 upstream skills are authored by **Matt Pocock** and sourced from the [Matt Pocock Skills Repository](https://github.com/mattpocock/skills). Clowder packages an **integrity-locked snapshot** under the upstream MIT License. See [Third-Party Notices](THIRD_PARTY_NOTICES.md).
 
 Review and add the `Clowder` alias printed by the installer.
 
@@ -32,7 +38,7 @@ scripts/onboard.sh \
   --base-branch main
 ```
 
-Onboarding installs the versioned Clowder pre-push guard and configures the consumer clone to reject direct base-branch updates. `scripts/doctor.sh` verifies this local guard. Configured review evidence, CI evidence, the Ready for Merge gate, its durable pull-request receipt, and HITL remain mandatory because the local guard is bypassable. `scripts/jira-mutate.sh` validates, records, applies, rereads, and receipts Jira card creation, metadata editing, linked-parent replacement, Lifecycle Phase changes, and Status handoffs with safe retry behavior.
+Onboarding installs the versioned Clowder pre-push guard and configures the consumer clone to **reject direct base-branch updates**. `scripts/doctor.sh` verifies this local guard. Configured review evidence, CI evidence, the **Ready for Merge gate**, its durable pull-request receipt, and **HITL** remain mandatory because the local guard is bypassable. `scripts/jira-mutate.sh` validates, records, applies, rereads, and receipts Jira card creation, metadata editing, linked-parent replacement, Lifecycle Phase changes, and Status handoffs with safe retry behavior.
 
 Complete the generated `.clowder/project.yaml` with the Jira board name, GitHub repository, approval owners, quality commands, required CI checks, and any project-specific risk rules.
 
@@ -40,16 +46,16 @@ Complete the generated `.clowder/project.yaml` with the Jira board name, GitHub 
 
 Create or configure the Jira project and board manually with these exact Clowder requirements:
 
-- Work types: `Stage`, `Epic`, `Feature`, `Subfeature`, and `Bug`.
-- Statuses and same-named board columns, in order: `To Do`, `Product Manager`, `Architect`, `Developer`, `Tester`, `Reviewer`, and `Done`.
-- Status Categories: `To Do` uses `To Do`, the 5 role Statuses use `In Progress`, and `Done` uses `Done`.
-- Native Parent: every Epic, Feature, Subfeature, and Bug directly names the same Stage as its Jira Parent.
-- Linked work-item relation: `Child`, with reciprocal labels `is parent of` and `is child of`.
-- Linked hierarchy: Epic → Feature → Subfeature → Bug. Each child has at most 1 linked parent. A Bug belongs to a Subfeature.
-- Lifecycle Phase field: Jira's native `Labels` field. It must be visible and editable. Clowder uses exactly 1 label per card and does not require a custom Lifecycle Phase field. For example, Development uses `Development`, while Ready for Development uses `Ready-for-Development`.
-- Permissions: the connected Jira identity can browse the project, search, create, edit, link, transition, and comment on work items, including editing Parent and Labels.
+- **Work types:** `Stage`, `Epic`, `Feature`, `Subfeature`, and `Bug`.
+- **Statuses and same-named board columns, in order:** `To Do`, `Product Manager`, `Architect`, `Developer`, `Tester`, `Reviewer`, and `Done`.
+- **Status Categories:** `To Do` uses `To Do`, the 5 role Statuses use `In Progress`, and `Done` uses `Done`.
+- **Native Parent:** every Epic, Feature, Subfeature, and Bug directly names the same Stage as its Jira Parent.
+- **Linked work-item relation:** `Child`, with reciprocal labels `is parent of` and `is child of`.
+- **Linked hierarchy:** Epic → Feature → Subfeature → Bug. Each child has at most 1 linked parent. A Bug belongs to a Subfeature.
+- **Lifecycle Phase field:** Jira's native `Labels` field. It must be visible and editable. Clowder uses exactly 1 label per card and does not require a custom Lifecycle Phase field. For example, Development uses `Development`, while Ready for Development uses `Ready-for-Development`.
+- **Permissions:** the connected Jira identity can browse the project, search, create, edit, link, transition, and comment on work items, including editing Parent and Labels.
 
-The board name and Jira project key must match `.clowder/project.yaml`. Clowder operates on Jira Status rather than board columns. Jira maps every Status to its same-named column. Additional Jira views do not affect Clowder.
+The **board name and Jira project key must match** `.clowder/project.yaml`. Clowder operates on **Jira Status rather than board columns**. Jira maps every Status to its same-named column. Additional Jira views do not affect Clowder.
 
 Set `jira.integration` to `acli`, authenticate ACLI, then verify Labels access and full readiness:
 
@@ -81,9 +87,9 @@ When Feature setup reports an existing branch, worktree, or artifact directory, 
 scripts/recover-feature.sh --repo /path/to/consumer --json JIRA-123 feature-name
 ```
 
-The classifier reports the durable state and exact preservation-first repair actions. It does not change Git or the filesystem.
+The classifier reports the durable state and exact preservation-first repair actions. It **does not change Git or the filesystem**.
 
-All Jira work-type, Parent, linked-hierarchy, Lifecycle Phase, Status, ownership, and handoff rules live in `JIRA_RULES.md`. The Orchestrator requires `scripts/jira-mutate.sh` for every supported Jira write and rejects a mutation or handoff without its verified receipt.
+All Jira work-type, Parent, linked-hierarchy, Lifecycle Phase, Status, ownership, and handoff rules live in `JIRA_RULES.md`. The Orchestrator requires `scripts/jira-mutate.sh` for **every supported Jira write** and rejects a mutation or handoff without its **verified receipt**.
 
 ## Develop Clowder
 
