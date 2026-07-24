@@ -1,6 +1,6 @@
 # Clowder
 
-> # clowder <small>*noun*</small>
+> # clowder <small>*(noun)*</small>
 >
 > <kbd>plural</kbd>&ensp;**-s**
 >
