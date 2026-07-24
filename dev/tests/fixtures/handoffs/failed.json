@@ -1,0 +1,13 @@
+{
+  "status": "failed",
+  "sources": [
+    "TEST_PLAN.md"
+  ],
+  "outputs": [],
+  "evidence": ["test-output.txt"],
+  "decisions": [],
+  "assumptions": [],
+  "risks": ["The configured test command failed."],
+  "questions": [],
+  "next_gate": "developer-remediation"
+}

@@ -1,0 +1,8 @@
+# Project-scoped defaults. The caller may override the model and effort per task.
+[agents]
+enabled = true
+# Capacity for clarification and orderly closure. Clowder still permits only 1 active player role.
+max_concurrent_threads_per_session = 2
+default_subagent_model = "gpt-5.6-luna"
+default_subagent_reasoning_effort = "xhigh"
+interrupt_message = true

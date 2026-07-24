@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clowder.local/schemas/jira-mutation-receipt.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema-version", "kind", "result", "generated-at", "repository", "jira-project",
+    "mutation-id", "request-sha256", "operation", "mode", "actor", "card", "before",
+    "after", "durable-records"
+  ],
+  "properties": {
+    "schema-version": {"const": 1},
+    "kind": {"const": "clowder-jira-mutation-receipt"},
+    "result": {"const": "passed"},
+    "generated-at": {"type": "string", "format": "date-time"},
+    "repository": {"type": "string", "minLength": 1},
+    "jira-project": {"type": "string", "pattern": "^[A-Z][A-Z0-9]+$"},
+    "mutation-id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"},
+    "request-sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "operation": {"enum": ["transition", "create", "edit", "relationship"]},
+    "mode": {"enum": ["applied", "recovered", "replayed"]},
+    "actor": {"type": "string", "minLength": 1},
+    "card": {"type": "object"},
+    "transition": {"type": "object"},
+    "lifecycle-phase": {"type": "object"},
+    "change": {"type": "object"},
+    "before": {},
+    "after": {},
+    "durable-records": {"type": "object"}
+  },
+  "oneOf": [
+    {
+      "required": ["transition", "lifecycle-phase"],
+      "properties": {
+        "operation": {"const": "transition"},
+        "card": {"$ref": "jira-mutation-request.schema.json#/$defs/existing-card"},
+        "transition": {"$ref": "jira-mutation-request.schema.json#/$defs/transition"},
+        "lifecycle-phase": {"$ref": "jira-mutation-request.schema.json#/$defs/lifecycle-phase-transition"},
+        "change": false,
+        "before": {"$ref": "#/$defs/observed-state"},
+        "after": {"$ref": "#/$defs/observed-state"},
+        "durable-records": {"$ref": "#/$defs/comment-records"}
+      }
+    },
+    {
+      "required": ["change"],
+      "properties": {
+        "operation": {"const": "create"},
+        "card": {"$ref": "#/$defs/created-card"},
+        "transition": false,
+        "lifecycle-phase": false,
+        "change": {"$ref": "jira-mutation-request.schema.json#/$defs/create"},
+        "before": {"type": "null"},
+        "after": {"$ref": "#/$defs/create-state"},
+        "durable-records": {"$ref": "#/$defs/create-records"}
+      }
+    },
+    {
+      "required": ["change"],
+      "properties": {
+        "operation": {"const": "edit"},
+        "card": {"$ref": "jira-mutation-request.schema.json#/$defs/existing-card"},
+        "transition": false,
+        "lifecycle-phase": false,
+        "change": {"$ref": "jira-mutation-request.schema.json#/$defs/edit"},
+        "before": {"$ref": "jira-mutation-request.schema.json#/$defs/metadata"},
+        "after": {"$ref": "jira-mutation-request.schema.json#/$defs/metadata"},
+        "durable-records": {"$ref": "#/$defs/comment-records"}
+      }
+    },
+    {
+      "required": ["change"],
+      "properties": {
+        "operation": {"const": "relationship"},
+        "card": {"$ref": "jira-mutation-request.schema.json#/$defs/relationship-card"},
+        "transition": false,
+        "lifecycle-phase": false,
+        "change": {"$ref": "jira-mutation-request.schema.json#/$defs/relationship"},
+        "before": {"$ref": "#/$defs/relationship-state"},
+        "after": {"$ref": "#/$defs/relationship-state"},
+        "durable-records": {"$ref": "#/$defs/comment-records"}
+      }
+    }
+  ],
+  "$defs": {
+    "comment-records": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "completion"],
+      "properties": {
+        "intent": {"const": "jira-comment"},
+        "completion": {"const": "jira-comment"}
+      }
+    },
+    "create-records": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "completion", "recovery"],
+      "properties": {
+        "intent": {"const": "jira-comment"},
+        "completion": {"const": "jira-comment"},
+        "recovery": {"const": "jira-description"}
+      }
+    },
+    "created-card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "work-type", "stage-parent", "linked-parent"],
+      "properties": {
+        "key": {"$ref": "jira-mutation-request.schema.json#/$defs/jira-key"},
+        "work-type": {"$ref": "jira-mutation-request.schema.json#/$defs/work-type"},
+        "stage-parent": {"$ref": "jira-mutation-request.schema.json#/$defs/nullable-jira-key"},
+        "linked-parent": {"$ref": "jira-mutation-request.schema.json#/$defs/nullable-jira-key"}
+      }
+    },
+    "observed-state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "lifecycle-phase", "label"],
+      "properties": {
+        "status": {"enum": ["To Do", "Product Manager", "Architect", "Developer", "Tester", "Reviewer", "Done"]},
+        "lifecycle-phase": {"$ref": "jira-mutation-request.schema.json#/$defs/nullable-lifecycle-phase"},
+        "label": {
+          "oneOf": [
+            {"enum": [
+              "Intake", "Discovery", "Feature-Definition", "PRD", "Design", "Test-Planning",
+              "Ready-for-Development", "Orchestration", "Development", "Developer-Verification",
+              "Testing", "Review", "Remediation", "Ready-for-Merge", "Production", "Complete",
+              "Needs-Information", "Rejected"
+            ]},
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "create-state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "description", "status", "lifecycle-phase", "stage-parent", "linked-parent"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "status": {"const": "To Do"},
+        "lifecycle-phase": {"$ref": "jira-mutation-request.schema.json#/$defs/lifecycle-phase"},
+        "stage-parent": {"$ref": "jira-mutation-request.schema.json#/$defs/nullable-jira-key"},
+        "linked-parent": {"$ref": "jira-mutation-request.schema.json#/$defs/nullable-jira-key"}
+      }
+    },
+    "relationship-state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["linked-parent"],
+      "properties": {
+        "linked-parent": {"$ref": "jira-mutation-request.schema.json#/$defs/nullable-jira-key"}
+      }
+    }
+  }
+}

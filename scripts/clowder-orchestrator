@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd -P)"
+# shellcheck source=lib.sh
+source "$SCRIPT_DIR/lib.sh"
+
+repo_path="$PWD"
+model=""
+reasoning_effort=""
+print_only=false
+
+while (($# > 0)); do
+  case "$1" in
+    --repo) repo_path=${2:?missing value for --repo}; shift 2 ;;
+    --model) model=${2:?missing value for --model}; shift 2 ;;
+    --reasoning-effort) reasoning_effort=${2:?missing value for --reasoning-effort}; shift 2 ;;
+    --print) print_only=true; shift ;;
+    -h|--help)
+      printf '%s\n' 'Usage: clowder-orchestrator [--repo PATH] [--model MODEL] [--reasoning-effort LEVEL] [--print]'
+      exit 0
+      ;;
+    *) die "unknown argument: $1" ;;
+  esac
+done
+
+repo_path="$(resolve_repo "$repo_path")"
+config="$(repo_config "$repo_path")"
+root="$(clowder_root)"
+export CLOWDER_ROOT="$root"
+model="${model:-$(yaml_scalar "$config" models.orchestrator 2>/dev/null || yaml_scalar "$config" models.luna 2>/dev/null || printf '%s' 'gpt-5.6-luna')}"
+reasoning_effort="${reasoning_effort:-$(yaml_scalar "$config" models.orchestrator-reasoning 2>/dev/null || printf '%s' 'xhigh')}"
+[[ "$reasoning_effort" =~ ^(low|medium|high|xhigh|max)$ ]] || die "invalid reasoning effort: $reasoning_effort"
+
+instruction=$(cat <<'EOF'
+Act as the Clowder Orchestrator for the current product repository.
+Read the Clowder methodology, `CONTEXT.md`, and `JIRA_RULES.md` from the Clowder directory made available to this session. Also read the product AGENTS.md and .clowder/project.yaml.
+Treat Jira, Git, GitHub, CI, and versioned artifacts as durable truth.
+Use the `clowder-help` skill to answer user questions about installing, configuring, operating, troubleshooting, or extending Clowder directly from the current Clowder product files. A help question does not start a Feature workflow.
+At session start, establish whether Git mode is commit and push freely, commit freely with permission required for each push, or permission required for each commit and push. Pass the selected mode to every spawned role for this repository and session.
+Coordinate work by spawning the named Clowder roles.
+Do not perform a specialist role's work in the Orchestrator thread.
+Keep exactly 1 player role active at a time and close an accepted role thread before dispatching the next player.
+Validate every Jira card and handoff against the allowed work types, direct Stage Parent, linked `Child` hierarchy, exactly 1 canonical Lifecycle Phase label, exactly 1 Active Owner for player Statuses, and the Status contract before dispatching work. Treat `To Do` as the unowned queue and `Done` as terminal.
+Require the Clowder `scripts/jira-mutate.sh` request and receipt contract for every Jira card creation, summary or description edit, linked `Child` relationship change, Lifecycle Phase change, and Status transition. Never write Jira state through ACLI directly. Accept a Jira mutation or handoff only after the adapter rereads Jira, verifies the target state and durable completion comment, and emits a successful receipt outside the product repository.
+When Feature setup encounters an existing branch, worktree, or artifact directory, run the read-only `scripts/recover-feature.sh` classifier and apply only its preservation-first recovery actions.
+Route material ambiguity to HITL.
+Stop at every configured human gate.
+After a successful Ready for Merge gate, generate the receipt at a temporary path outside the product repository, publish the exact Ready for Merge receipt as a pull-request comment, and verify the durable comment before recommending merge. Never publish a receipt from a failed gate.
+Begin by waiting for the user's Jira request.
+EOF
+)
+
+if [[ "$print_only" == true ]]; then
+  printf 'CLOWDER_ROOT=%q codex -C %q --add-dir %q --dangerously-bypass-approvals-and-sandbox -m %q -c %q -c %q %q\n' "$root" "$repo_path" "$root" "$model" "model_reasoning_effort=\"$reasoning_effort\"" 'agents.max_concurrent_threads_per_session=2' "$instruction"
+  exit 0
+fi
+
+require_command codex
+exec codex -C "$repo_path" --add-dir "$root" --dangerously-bypass-approvals-and-sandbox -m "$model" -c "model_reasoning_effort=\"$reasoning_effort\"" -c 'agents.max_concurrent_threads_per_session=2' "$instruction"

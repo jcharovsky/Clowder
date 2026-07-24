@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clowder.local/schemas/handoff.schema.json",
+  "type": "object",
+  "required": ["status", "sources", "outputs", "evidence", "decisions", "assumptions", "risks", "questions", "next_gate"],
+  "properties": {
+    "status": { "enum": ["completed", "clarification-required", "blocked", "failed"] },
+    "sources": { "type": "array", "items": { "type": "string" } },
+    "outputs": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "decisions": { "type": "array", "items": { "type": "string" } },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } },
+    "questions": { "type": "array", "items": { "type": "string" } },
+    "next_gate": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

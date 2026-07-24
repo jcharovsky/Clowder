@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clowder.local/schemas/jira-mutation-request.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema-version", "kind", "mutation-id", "operation", "actor", "card"],
+  "properties": {
+    "schema-version": {"const": 1},
+    "kind": {"const": "clowder-jira-mutation"},
+    "mutation-id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"},
+    "operation": {"enum": ["transition", "create", "edit", "relationship"]},
+    "actor": {"$ref": "#/$defs/actor"},
+    "card": {"type": "object"},
+    "transition": {"$ref": "#/$defs/transition"},
+    "lifecycle-phase": {"$ref": "#/$defs/lifecycle-phase-transition"},
+    "create": {"$ref": "#/$defs/create"},
+    "edit": {"$ref": "#/$defs/edit"},
+    "relationship": {"$ref": "#/$defs/relationship"}
+  },
+  "oneOf": [
+    {
+      "required": ["transition", "lifecycle-phase"],
+      "properties": {
+        "operation": {"const": "transition"},
+        "card": {"$ref": "#/$defs/existing-card"},
+        "create": false,
+        "edit": false,
+        "relationship": false
+      }
+    },
+    {
+      "required": ["create"],
+      "properties": {
+        "operation": {"const": "create"},
+        "card": {"$ref": "#/$defs/create-card"},
+        "transition": false,
+        "lifecycle-phase": false,
+        "edit": false,
+        "relationship": false
+      }
+    },
+    {
+      "required": ["edit"],
+      "properties": {
+        "operation": {"const": "edit"},
+        "card": {"$ref": "#/$defs/existing-card"},
+        "transition": false,
+        "lifecycle-phase": false,
+        "create": false,
+        "relationship": false
+      }
+    },
+    {
+      "required": ["relationship"],
+      "properties": {
+        "operation": {"const": "relationship"},
+        "card": {"$ref": "#/$defs/relationship-card"},
+        "transition": false,
+        "lifecycle-phase": false,
+        "create": false,
+        "edit": false
+      }
+    }
+  ],
+  "$defs": {
+    "jira-key": {"type": "string", "pattern": "^[A-Z][A-Z0-9]+-[0-9]+$"},
+    "nullable-jira-key": {
+      "oneOf": [{"$ref": "#/$defs/jira-key"}, {"type": "null"}]
+    },
+    "actor": {
+      "enum": ["Orchestrator", "Product Manager", "Architect", "Developer", "Tester", "Reviewer"]
+    },
+    "work-type": {"enum": ["Stage", "Epic", "Feature", "Subfeature", "Bug"]},
+    "existing-card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "work-type", "stage-parent", "linked-parent"],
+      "properties": {
+        "key": {"$ref": "#/$defs/jira-key"},
+        "work-type": {"$ref": "#/$defs/work-type"},
+        "stage-parent": {"$ref": "#/$defs/nullable-jira-key"},
+        "linked-parent": {"$ref": "#/$defs/nullable-jira-key"}
+      }
+    },
+    "create-card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["work-type", "stage-parent", "linked-parent"],
+      "properties": {
+        "work-type": {"$ref": "#/$defs/work-type"},
+        "stage-parent": {"$ref": "#/$defs/nullable-jira-key"},
+        "linked-parent": {"$ref": "#/$defs/nullable-jira-key"}
+      }
+    },
+    "relationship-card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "work-type", "stage-parent"],
+      "properties": {
+        "key": {"$ref": "#/$defs/jira-key"},
+        "work-type": {"$ref": "#/$defs/work-type"},
+        "stage-parent": {"$ref": "#/$defs/nullable-jira-key"}
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "reason", "evidence", "next-action"],
+      "properties": {
+        "from": {"enum": ["To Do", "Product Manager", "Architect", "Developer", "Tester", "Reviewer"]},
+        "to": {"enum": ["To Do", "Product Manager", "Architect", "Developer", "Tester", "Reviewer", "Done"]},
+        "reason": {"type": "string", "minLength": 1},
+        "evidence": {"$ref": "#/$defs/evidence"},
+        "next-action": {"type": "string", "minLength": 1}
+      }
+    },
+    "create": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "description", "status", "lifecycle-phase", "reason", "evidence", "next-action"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "status": {"const": "To Do"},
+        "lifecycle-phase": {"$ref": "#/$defs/lifecycle-phase"},
+        "reason": {"type": "string", "minLength": 1},
+        "evidence": {"$ref": "#/$defs/evidence"},
+        "next-action": {"type": "string", "minLength": 1}
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "description"],
+      "properties": {
+        "summary": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "edit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "reason", "evidence", "next-action"],
+      "properties": {
+        "from": {"$ref": "#/$defs/metadata"},
+        "to": {"$ref": "#/$defs/metadata"},
+        "reason": {"type": "string", "minLength": 1},
+        "evidence": {"$ref": "#/$defs/evidence"},
+        "next-action": {"type": "string", "minLength": 1}
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "reason", "evidence", "next-action"],
+      "properties": {
+        "from": {"$ref": "#/$defs/nullable-jira-key"},
+        "to": {"$ref": "#/$defs/nullable-jira-key"},
+        "reason": {"type": "string", "minLength": 1},
+        "evidence": {"$ref": "#/$defs/evidence"},
+        "next-action": {"type": "string", "minLength": 1}
+      }
+    },
+    "lifecycle-phase": {
+      "enum": [
+        "Intake", "Discovery", "Feature Definition", "PRD", "Design", "Test Planning",
+        "Ready for Development", "Orchestration", "Development", "Developer Verification",
+        "Testing", "Review", "Remediation", "Ready for Merge", "Production", "Complete",
+        "Needs Information", "Rejected"
+      ]
+    },
+    "nullable-lifecycle-phase": {
+      "oneOf": [{"$ref": "#/$defs/lifecycle-phase"}, {"type": "null"}]
+    },
+    "lifecycle-phase-transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": {"$ref": "#/$defs/nullable-lifecycle-phase"},
+        "to": {"$ref": "#/$defs/lifecycle-phase"}
+      }
+    }
+  }
+}

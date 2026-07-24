@@ -1,0 +1,59 @@
+schema-version: 1
+project:
+  name: replace-with-product-name
+jira:
+  project-key: ABC
+  integration: offline
+  board-name: Clowder Flow
+  required-columns:
+  - To Do
+  - Product Manager
+  - Architect
+  - Developer
+  - Tester
+  - Reviewer
+  - Done
+  required-work-types:
+  - Stage
+  - Epic
+  - Feature
+  - Subfeature
+  - Bug
+  native-parent-field: parent
+  child-link-type: Child
+  status-field: status
+  lifecycle-phase-field: labels
+git:
+  remote: origin
+  base-branch: main
+  feature-prefix: feat
+github:
+  repository: replace-with-owner/repository
+  review-evidence: clowder-attestation
+documents:
+  feature-root: docs/features
+  adr-root: docs/adr
+quality:
+  commands:
+    format: ""
+    lint: ""
+    typecheck: ""
+    build: ""
+    unit: ""
+    integration: ""
+    e2e: ""
+  required-checks: []
+risk:
+  rules: []
+approvals:
+  product-owner: replace-with-human
+  architecture-owner: replace-with-human
+  residual-risk-owner: replace-with-human
+  merge-owner: replace-with-human
+models:
+  orchestrator: gpt-5.6-luna
+  orchestrator-reasoning: xhigh
+  luna: gpt-5.6-luna
+  terra: gpt-5.6-terra
+  sol: gpt-5.6-sol
+  astra: ""

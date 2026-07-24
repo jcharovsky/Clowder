@@ -1,0 +1,13 @@
+{
+  "status": "clarification-required",
+  "sources": [
+    "PRD.md"
+  ],
+  "outputs": [],
+  "evidence": [],
+  "decisions": [],
+  "assumptions": ["The retention period is unresolved."],
+  "risks": ["Implementation could violate policy."],
+  "questions": ["Which retention period is required?"],
+  "next_gate": "human-decision"
+}

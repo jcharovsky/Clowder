@@ -1,0 +1,135 @@
+{
+  "lockVersion": 2,
+  "source": "https://github.com/mattpocock/skills",
+  "sourceAuthor": "Matt Pocock",
+  "sourceLicense": "MIT",
+  "sourceCommit": "c55ee46073ed923f86ce59a5eb3b6d895095d1b7",
+  "reviewedAt": "2026-09-19",
+  "skills": {
+    "triage": {
+      "path": "skills/engineering/triage",
+      "files": {
+        "AGENT-BRIEF.md": "7f5f87fed3033df1b06e083c480f3e847b1fbb0647746b8a4c6a50f9f26ef44f",
+        "OUT-OF-SCOPE.md": "1fbf9b432130c6380aa65813b55553cfda150309b27c595e183f8e335b8a190d",
+        "SKILL.md": "623a2ed692bdc77d2090e2a3dea3b627dd722ad3bbaca0be83aada75292c8fc4",
+        "agents/openai.yaml": "2e683717720cf456d165d0bb1a68bb600d0b6a8ccb61841c172e50d26f95351c"
+      }
+    },
+    "grilling": {
+      "path": "skills/productivity/grilling",
+      "files": {
+        "SKILL.md": "10ff989e7498b23b5acb49d5048f11dcd906757d2f79c5cdf8a00001381296f2",
+        "agents/openai.yaml": "1411d7df7d99b7e621a1ff8283c8133cc2464be63d064e52d8ce169c6800ee9b"
+      }
+    },
+    "grill-with-docs": {
+      "path": "skills/engineering/grill-with-docs",
+      "files": {
+        "SKILL.md": "7de372c13488f1ee96cc11cd8907b56b6809cc93eef776eeddd37de6b6cbe3fe",
+        "agents/openai.yaml": "94cd0ab161fb468a836349f5ed482ba58ce8e709a05c57ce533d739dbd35cca9"
+      }
+    },
+    "to-spec": {
+      "path": "skills/engineering/to-spec",
+      "files": {
+        "SKILL.md": "43ad9cf318e5e7d3d1fa360253a37021796dc87a0c2e595ad262661a10f85088",
+        "agents/openai.yaml": "1c5b4d1e3d8e52287ef19cc2742fdbbfae1914ac75d33af3e4c8174f08cc55bb"
+      }
+    },
+    "to-tickets": {
+      "path": "skills/engineering/to-tickets",
+      "files": {
+        "SKILL.md": "5c9fba69845c2519b9b35b9af42ae5142c21f8ca15ac2123dc2722002c8058ae",
+        "agents/openai.yaml": "21bc6215fffcd7614e9f772bb1760e87cc5fc7dcc707e7d282bc9414267a6090"
+      }
+    },
+    "codebase-design": {
+      "path": "skills/engineering/codebase-design",
+      "files": {
+        "DEEPENING.md": "f3dd099ce99289bd213914d8ee3e2429b78309c3957ca4583f7659551b1d53c1",
+        "DESIGN-IT-TWICE.md": "8e740bf98446dbd4dfdc132ac4346d9a7eedaf93de6a495889171cf7f99f16bd",
+        "SKILL.md": "2c20617f87ec8af6a434859f381b2f061a69b530444e74eb39e78bb016a6d1e2",
+        "agents/openai.yaml": "edebc9e4fcfe102114012575eaa9600b9b5fd08c311664f389c36e7bc717740f"
+      }
+    },
+    "domain-modeling": {
+      "path": "skills/engineering/domain-modeling",
+      "files": {
+        "ADR-FORMAT.md": "944c92aa790e8fbdc9199640b170979abb8a34ba8d0fe18c2a01a63bce140ca0",
+        "CONTEXT-FORMAT.md": "17ab16ce783e4d2801ee52fd9acdf550cbf44de65ae76797a93943bbedf22a13",
+        "SKILL.md": "327a2b50620e2fd70abc6893cd6965e76b20f8d0adb0dc2c8d5eb3845efb643e",
+        "agents/openai.yaml": "f6bf2aa996c6e6f53fdd0708e18a0d16a56aed8322cca59fedbe3c0d2c75f06b"
+      }
+    },
+    "prototype": {
+      "path": "skills/engineering/prototype",
+      "files": {
+        "LOGIC.md": "f61c7d249e786a79ef289018901c348271e1798dd0b0bc5607b5c6f4d4a01ab9",
+        "SKILL.md": "714de632d116bb73f65cdb5a882db15b9369a6713b9a47c0fad827848f0bfbe3",
+        "UI.md": "723211e878acbc7b6ff09755263f3295cde724ba902ff0064da41eed51d45ad3",
+        "agents/openai.yaml": "5af65e43ab41a350436697b81e27b7f848d36782043b73c322bb2c9fa9cc55dc"
+      }
+    },
+    "implement": {
+      "path": "skills/engineering/implement",
+      "files": {
+        "SKILL.md": "6d3fd9e83b8f36e5213854779db49b256a457a7ebb4a503e53fa7dcff696adc3",
+        "agents/openai.yaml": "8970a8596ade0c28ab427f41a4ea242d6bdf6186c59ebf55e1238dbecaab79dc"
+      }
+    },
+    "tdd": {
+      "path": "skills/engineering/tdd",
+      "files": {
+        "SKILL.md": "cb01f66bebfaa25fa1f88e6b7e769cd9fd9f35b1120b8563749820738814c927",
+        "agents/openai.yaml": "ea6f01cf1b8c06a4b0f5b649d74b1b8ce8685e72af1b38d70d877693e092af0b",
+        "mocking.md": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef",
+        "tests.md": "859f9e592c188fda4fc7277dd180e4ce9c7a2e13f6efe1f6f29eccc9d28c106a"
+      }
+    },
+    "diagnosing-bugs": {
+      "path": "skills/engineering/diagnosing-bugs",
+      "files": {
+        "SKILL.md": "77f3cf31bc99b2f49af943222526531fcc9fc41d047626d3640e875e85af3e84",
+        "agents/openai.yaml": "3e430dbe4334a87597488c060cb3dc3786bb00c9182877d6f5ec41f62490e90b",
+        "scripts/hitl-loop.template.sh": "35103539fc36873eea36074769ad454f9379d6fc8b2dc0e26ce987fd3bfe5503"
+      }
+    },
+    "resolving-merge-conflicts": {
+      "path": "skills/engineering/resolving-merge-conflicts",
+      "files": {
+        "SKILL.md": "9d8114f8ef0b31f535a265fc05c364bd8cf2e2895a830040e06c22acb11f54b0",
+        "agents/openai.yaml": "a1f4f96838f2ed6282eb28abbbf99029cb8fadce552baf53da90a025b8bffddf"
+      }
+    },
+    "code-review": {
+      "path": "skills/engineering/code-review",
+      "files": {
+        "SKILL.md": "47f4e52c21694def9c7c11cbfbf891ca35eac7a93e395797515be3c8a409ae50",
+        "agents/openai.yaml": "8229ca854e11dc8e6aef2131ee03f31fb1561cf905fab9ccc325180cf3331352"
+      }
+    },
+    "handoff": {
+      "path": "skills/productivity/handoff",
+      "files": {
+        "SKILL.md": "7c62de979fdc7ac32fb5ddb2146156c917f80ee070d30fadc9d40343c4b6ed25",
+        "agents/openai.yaml": "5c479fd562c691851690e8b18c8501045bef0943c10743d636b2fae26add1d28"
+      }
+    },
+    "wizard": {
+      "path": "skills/engineering/wizard",
+      "files": {
+        "SKILL.md": "bdf31d48211ea559878f95a4f344aeabf8d85897488ba564382bab0b000daac1",
+        "agents/openai.yaml": "98f44d682d58e262f160dc59a8befc365e0aa65820dd0261864af26aa8e59d83",
+        "template.sh": "33cbe9dfb1d0e9185b60248a52aabed14bc64785a00cac695e302e739dd6c153"
+      }
+    },
+    "writing-for-agents": {
+      "path": "skills/productivity/writing-for-agents",
+      "files": {
+        "SKILL-MECHANICS.md": "c768e6307c7c10728c401c213f2c4ba71c542127eeb7ad2956aabd15a0fa0059",
+        "SKILL.md": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a",
+        "agents/openai.yaml": "eacb24b2a618cfb81dacb0416f4fdd75ddf3a8060f8ddb99aae1b1e301907e4b"
+      }
+    }
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clowder.local/schemas/project.schema.json",
+  "type": "object",
+  "required": [
+    "schema-version",
+    "project",
+    "jira",
+    "git",
+    "github",
+    "documents",
+    "quality",
+    "risk",
+    "approvals",
+    "models"
+  ],
+  "properties": {
+    "schema-version": {
+      "const": 1
+    },
+    "project": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "jira": {
+      "type": "object",
+      "required": [
+        "project-key",
+        "integration",
+        "board-name",
+        "required-columns",
+        "required-work-types",
+        "native-parent-field",
+        "child-link-type",
+        "status-field",
+        "lifecycle-phase-field"
+      ],
+      "properties": {
+        "project-key": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]+$"
+        },
+        "integration": {
+          "type": "string",
+          "minLength": 1
+        },
+        "board-name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "required-columns": {
+          "const": ["To Do", "Product Manager", "Architect", "Developer", "Tester", "Reviewer", "Done"]
+        },
+        "required-work-types": {
+          "const": ["Stage", "Epic", "Feature", "Subfeature", "Bug"]
+        },
+        "native-parent-field": {
+          "const": "parent"
+        },
+        "child-link-type": {
+          "const": "Child"
+        },
+        "status-field": {
+          "const": "status"
+        },
+        "lifecycle-phase-field": {
+          "const": "labels"
+        }
+      }
+    },
+    "git": {
+      "type": "object",
+      "required": ["remote", "base-branch", "feature-prefix"],
+      "properties": {
+        "remote": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base-branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "feature-prefix": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]*$"
+        }
+      }
+    },
+    "github": {
+      "type": "object",
+      "required": ["repository"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "review-evidence": {
+          "type": "string",
+          "enum": ["clowder-attestation", "github-approval"],
+          "default": "clowder-attestation"
+        }
+      }
+    },
+    "documents": {
+      "type": "object",
+      "required": ["feature-root", "adr-root"],
+      "properties": {
+        "feature-root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adr-root": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "required": ["commands", "required-checks"],
+      "properties": {
+        "commands": {
+          "type": "object",
+          "required": ["format", "lint", "typecheck", "build", "unit", "integration", "e2e"],
+          "properties": {
+            "format": { "type": "string" },
+            "lint": { "type": "string" },
+            "typecheck": { "type": "string" },
+            "build": { "type": "string" },
+            "unit": { "type": "string" },
+            "integration": { "type": "string" },
+            "e2e": { "type": "string" }
+          },
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "required-checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "required": ["rules"],
+      "properties": {
+        "rules": {
+          "type": "array"
+        }
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "required": ["product-owner", "architecture-owner", "residual-risk-owner", "merge-owner"],
+      "properties": {
+        "product-owner": { "type": "string" },
+        "architecture-owner": { "type": "string" },
+        "residual-risk-owner": { "type": "string" },
+        "merge-owner": { "type": "string" }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "models": {
+      "type": "object",
+      "required": ["orchestrator", "orchestrator-reasoning", "luna", "terra", "sol", "astra"],
+      "properties": {
+        "orchestrator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "orchestrator-reasoning": {
+          "enum": ["low", "medium", "high", "xhigh", "max"]
+        },
+        "luna": {
+          "type": "string",
+          "minLength": 1
+        },
+        "terra": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "astra": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

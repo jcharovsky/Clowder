@@ -1,0 +1,179 @@
+#!/usr/bin/env bash
+# ACLI boundary fixture for Jira entity mutations.
+set -euo pipefail
+
+printf '%s\n' "$*" >> "$CLOWDER_TEST_ACLI_LOG"
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == view ]]; then
+  item=$4
+  jq . "$CLOWDER_TEST_JIRA_STATE_DIR/$item.json"
+  exit 0
+fi
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == comment && "${4:-}" == list ]]; then
+  card_id=''
+  shift 4
+  while (($# > 0)); do
+    case "$1" in
+      --key) card_id=$2; shift 2 ;;
+      --paginate|--json) shift ;;
+      *) exit 64 ;;
+    esac
+  done
+  jq --arg card_id "$card_id" '.[$card_id] // []' "$CLOWDER_TEST_JIRA_COMMENTS"
+  exit 0
+fi
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == comment && "${4:-}" == create ]]; then
+  card_id=''
+  body_file=''
+  shift 4
+  while (($# > 0)); do
+    case "$1" in
+      --key) card_id=$2; shift 2 ;;
+      --body-file) body_file=$2; shift 2 ;;
+      --json) shift ;;
+      *) exit 64 ;;
+    esac
+  done
+  body="$(sed -n '1,$p' "$body_file")"
+  jq --arg card_id "$card_id" --arg body "$body" '.[$card_id] = ((.[$card_id] // []) + [{body: $body}])' \
+    "$CLOWDER_TEST_JIRA_COMMENTS" > "$CLOWDER_TEST_JIRA_COMMENTS.next"
+  mv -- "$CLOWDER_TEST_JIRA_COMMENTS.next" "$CLOWDER_TEST_JIRA_COMMENTS"
+  jq -n --arg body "$body" '{body: $body}'
+  exit 0
+fi
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == link && "${4:-}" == create ]]; then
+  if [[ -n "${CLOWDER_TEST_FAIL_LINK_ONCE:-}" && -e "$CLOWDER_TEST_FAIL_LINK_ONCE" ]]; then
+    mv -- "$CLOWDER_TEST_FAIL_LINK_ONCE" "$CLOWDER_TEST_FAIL_LINK_ONCE.used"
+    exit 45
+  fi
+  outward=''
+  inward=''
+  link_type=''
+  shift 4
+  while (($# > 0)); do
+    case "$1" in
+      --out) outward=$2; shift 2 ;;
+      --in) inward=$2; shift 2 ;;
+      --type) link_type=$2; shift 2 ;;
+      --yes) shift ;;
+      *) exit 64 ;;
+    esac
+  done
+  [[ -n "$outward" && -n "$inward" && "$link_type" == Child ]]
+  link_id="$(sed -n '1p' "$CLOWDER_TEST_NEXT_LINK")"
+  outward_type="$(jq -r '.fields.issuetype.name' "$CLOWDER_TEST_JIRA_STATE_DIR/$outward.json")"
+  inward_type="$(jq -r '.fields.issuetype.name' "$CLOWDER_TEST_JIRA_STATE_DIR/$inward.json")"
+  jq \
+    --arg link_id "$link_id" \
+    --arg parent "$outward" \
+    --arg parent_type "$outward_type" \
+    '.fields.issuelinks += [{id: $link_id, type: {name: "Child", inward: "is parent of", outward: "is child of"}, outwardIssue: {key: $parent, fields: {issuetype: {name: $parent_type}}}}]' \
+    "$CLOWDER_TEST_JIRA_STATE_DIR/$inward.json" > "$CLOWDER_TEST_JIRA_STATE_DIR/$inward.json.next"
+  mv -- "$CLOWDER_TEST_JIRA_STATE_DIR/$inward.json.next" "$CLOWDER_TEST_JIRA_STATE_DIR/$inward.json"
+  jq \
+    --arg link_id "$link_id" \
+    --arg child "$inward" \
+    --arg child_type "$inward_type" \
+    '.fields.issuelinks += [{id: $link_id, type: {name: "Child", inward: "is parent of", outward: "is child of"}, inwardIssue: {key: $child, fields: {issuetype: {name: $child_type}}}}]' \
+    "$CLOWDER_TEST_JIRA_STATE_DIR/$outward.json" > "$CLOWDER_TEST_JIRA_STATE_DIR/$outward.json.next"
+  mv -- "$CLOWDER_TEST_JIRA_STATE_DIR/$outward.json.next" "$CLOWDER_TEST_JIRA_STATE_DIR/$outward.json"
+  jq -n --arg link_id "$link_id" '{id: $link_id}'
+  exit 0
+fi
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == search ]]; then
+  jq -s '.' "$CLOWDER_TEST_JIRA_STATE_DIR"/*.json
+  exit 0
+fi
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == create ]]; then
+  summary=''
+  description_file=''
+  project=''
+  work_type=''
+  label=''
+  parent=''
+  shift 3
+  while (($# > 0)); do
+    case "$1" in
+      --summary) summary=$2; shift 2 ;;
+      --description-file) description_file=$2; shift 2 ;;
+      --project) project=$2; shift 2 ;;
+      --type) work_type=$2; shift 2 ;;
+      --label) label=$2; shift 2 ;;
+      --parent) parent=$2; shift 2 ;;
+      --json) shift ;;
+      *) exit 64 ;;
+    esac
+  done
+  [[ -n "$summary" && -n "$description_file" && -n "$project" && -n "$work_type" && -n "$label" ]]
+  key="$(sed -n '1p' "$CLOWDER_TEST_NEXT_KEY")"
+  description="$(sed -n '1,$p' "$description_file")"
+  if [[ -n "$parent" ]]; then
+    parent_json="$(jq -n --arg value "$parent" '{key: $value, fields: {issuetype: {name: "Stage"}}}')"
+  else
+    parent_json=null
+  fi
+  jq -n \
+    --arg card_id "$key" \
+    --arg summary "$summary" \
+    --arg description "$description" \
+    --arg work_type "$work_type" \
+    --arg label "$label" \
+    --argjson parent "$parent_json" \
+    '{key: $card_id, fields: {summary: $summary, description: $description, status: {name: "To Do"}, labels: [$label], issuetype: {name: $work_type}, parent: $parent, issuelinks: []}}' \
+    > "$CLOWDER_TEST_JIRA_STATE_DIR/$key.json"
+  jq -n --arg card_id "$key" '{key: $card_id}'
+  exit 0
+fi
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == edit ]]; then
+  if [[ -n "${CLOWDER_TEST_FAIL_EDIT_ONCE:-}" && -e "$CLOWDER_TEST_FAIL_EDIT_ONCE" ]]; then
+    mv -- "$CLOWDER_TEST_FAIL_EDIT_ONCE" "$CLOWDER_TEST_FAIL_EDIT_ONCE.used"
+    exit 46
+  fi
+  card_id=''
+  summary=''
+  description_file=''
+  shift 3
+  while (($# > 0)); do
+    case "$1" in
+      --key) card_id=$2; shift 2 ;;
+      --summary) summary=$2; shift 2 ;;
+      --description-file) description_file=$2; shift 2 ;;
+      --yes|--json) shift ;;
+      *) exit 64 ;;
+    esac
+  done
+  [[ -n "$card_id" && -n "$summary" && -n "$description_file" ]]
+  description="$(sed -n '1,$p' "$description_file")"
+  jq --arg summary "$summary" --arg description "$description" \
+    '.fields.summary = $summary | .fields.description = $description' \
+    "$CLOWDER_TEST_JIRA_STATE_DIR/$card_id.json" > "$CLOWDER_TEST_JIRA_STATE_DIR/$card_id.json.next"
+  mv -- "$CLOWDER_TEST_JIRA_STATE_DIR/$card_id.json.next" "$CLOWDER_TEST_JIRA_STATE_DIR/$card_id.json"
+  jq -n --arg card_id "$card_id" '{key: $card_id}'
+  exit 0
+fi
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == link && "${4:-}" == delete ]]; then
+  link_id=''
+  shift 4
+  while (($# > 0)); do
+    case "$1" in
+      --id) link_id=$2; shift 2 ;;
+      --yes) shift ;;
+      *) exit 64 ;;
+    esac
+  done
+  [[ -n "$link_id" ]]
+  for card_file in "$CLOWDER_TEST_JIRA_STATE_DIR"/*.json; do
+    jq --arg link_id "$link_id" '.fields.issuelinks |= map(select(.id != $link_id))' "$card_file" > "$card_file.next"
+    mv -- "$card_file.next" "$card_file"
+  done
+  exit 0
+fi
+
+exit 64

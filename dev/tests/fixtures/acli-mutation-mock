@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+# ACLI boundary fixture for Jira transition mutations.
+set -euo pipefail
+
+printf '%s\n' "$*" >> "$CLOWDER_TEST_ACLI_LOG"
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == view ]]; then
+  item=$4
+  shift 4
+  [[ "$*" == '--fields key,summary,status,labels,issuetype,parent,issuelinks --json' ]]
+  jq . "$CLOWDER_TEST_JIRA_STATE_DIR/$item.json"
+  exit 0
+fi
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == edit ]]; then
+  if [[ -e "$CLOWDER_TEST_FAIL_LABEL_ONCE" ]]; then
+    mv -- "$CLOWDER_TEST_FAIL_LABEL_ONCE" "$CLOWDER_TEST_FAIL_LABEL_ONCE.used"
+    exit 44
+  fi
+  item=''
+  add_label=''
+  remove_label=''
+  shift 3
+  while (($# > 0)); do
+    case "$1" in
+      --key) item=$2; shift 2 ;;
+      --labels) add_label=$2; shift 2 ;;
+      --remove-labels) remove_label=$2; shift 2 ;;
+      --yes|--json) shift ;;
+      *) exit 64 ;;
+    esac
+  done
+  [[ -n "$item" && -n "$add_label" ]]
+  jq --arg add "$add_label" --arg remove "$remove_label" '
+    .fields.labels = ([.fields.labels[]? | select(. != $remove)] + [$add] | unique)
+  ' "$CLOWDER_TEST_JIRA_STATE_DIR/$item.json" > "$CLOWDER_TEST_JIRA_STATE_DIR/$item.json.next"
+  mv -- "$CLOWDER_TEST_JIRA_STATE_DIR/$item.json.next" "$CLOWDER_TEST_JIRA_STATE_DIR/$item.json"
+  jq -n --arg label "$add_label" '{labels: [$label]}'
+  exit 0
+fi
+
+if [[ "$*" == 'jira workitem comment list --key FIX-20 --paginate --json' ]]; then
+  jq . "$CLOWDER_TEST_JIRA_COMMENTS"
+  exit 0
+fi
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == comment && "${4:-}" == create ]]; then
+  body_file=''
+  shift 4
+  while (($# > 0)); do
+    case "$1" in
+      --body-file) body_file=$2; shift 2 ;;
+      --key) shift 2 ;;
+      --json) shift ;;
+      *) exit 64 ;;
+    esac
+  done
+  [[ -n "$body_file" ]]
+  body="$(sed -n '1,$p' "$body_file")"
+  if [[ "$body" == CLOWDER_JIRA_MUTATION_COMPLETION* && -e "$CLOWDER_TEST_FAIL_COMPLETION_ONCE" ]]; then
+    mv -- "$CLOWDER_TEST_FAIL_COMPLETION_ONCE" "$CLOWDER_TEST_FAIL_COMPLETION_ONCE.used"
+    exit 43
+  fi
+  next_id="$(jq 'length + 1' "$CLOWDER_TEST_JIRA_COMMENTS")"
+  jq --arg id "$next_id" --arg body "$body" '. + [{id: $id, body: $body}]' \
+    "$CLOWDER_TEST_JIRA_COMMENTS" > "$CLOWDER_TEST_JIRA_COMMENTS.next"
+  mv -- "$CLOWDER_TEST_JIRA_COMMENTS.next" "$CLOWDER_TEST_JIRA_COMMENTS"
+  jq -n --arg id "$next_id" --arg body "$body" '{id: $id, body: $body}'
+  exit 0
+fi
+
+if [[ "${1:-}" == jira && "${2:-}" == workitem && "${3:-}" == transition ]]; then
+  if [[ -e "$CLOWDER_TEST_FAIL_ONCE" ]]; then
+    mv -- "$CLOWDER_TEST_FAIL_ONCE" "$CLOWDER_TEST_FAIL_ONCE.used"
+    exit 42
+  fi
+  target=''
+  item=''
+  shift 3
+  while (($# > 0)); do
+    case "$1" in
+      --status) target=$2; shift 2 ;;
+      --key) item=$2; shift 2 ;;
+      --yes|--json) shift ;;
+      *) exit 64 ;;
+    esac
+  done
+  [[ -n "$target" && -n "$item" ]]
+  jq --arg target "$target" '.fields.status.name = $target' \
+    "$CLOWDER_TEST_JIRA_STATE_DIR/$item.json" > "$CLOWDER_TEST_JIRA_STATE_DIR/$item.json.next"
+  mv -- "$CLOWDER_TEST_JIRA_STATE_DIR/$item.json.next" "$CLOWDER_TEST_JIRA_STATE_DIR/$item.json"
+  jq -n --arg status "$target" '{status: $status}'
+  exit 0
+fi
+
+exit 64

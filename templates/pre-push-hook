@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+base_branch="$(git config --local --get clowder.baseBranch 2>/dev/null || true)"
+if [[ -z "$base_branch" ]]; then
+  printf '%s\n' 'clowder: direct-push guard is missing clowder.baseBranch' >&2
+  exit 1
+fi
+
+protected_ref="refs/heads/$base_branch"
+
+while read -r _local_ref _local_oid remote_ref _remote_oid; do
+  if [[ "$remote_ref" == "$protected_ref" ]]; then
+    printf 'clowder: direct pushes and deletions of %s are blocked; merge an approved pull request instead\n' "$base_branch" >&2
+    exit 1
+  fi
+done

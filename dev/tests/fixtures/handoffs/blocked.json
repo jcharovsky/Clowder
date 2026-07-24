@@ -1,0 +1,13 @@
+{
+  "status": "blocked",
+  "sources": [
+    "TECHNICAL_DESIGN.md"
+  ],
+  "outputs": [],
+  "evidence": ["dependency-check.txt"],
+  "decisions": [],
+  "assumptions": [],
+  "risks": ["The required provider is unavailable."],
+  "questions": ["Should the Feature wait or be decomposed?"],
+  "next_gate": "product-manager-reassessment"
+}

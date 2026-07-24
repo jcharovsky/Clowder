@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clowder.local/schemas/feature.schema.json",
+  "type": "object",
+  "required": ["schema-version", "feature", "artifacts", "approvals"],
+  "properties": {
+    "schema-version": {
+      "const": 1
+    },
+    "feature": {
+      "type": "object",
+      "required": [
+        "jira-key",
+        "slug",
+        "name",
+        "lifecycle-phase",
+        "risk",
+        "source-requests",
+        "branch",
+        "worktree",
+        "pull-request",
+        "base-revision",
+        "head-revision"
+      ],
+      "properties": {
+        "jira-key": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9]+-[0-9]+$"
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lifecycle-phase": {
+          "enum": [
+            "intake",
+            "discovery",
+            "feature-definition",
+            "prd",
+            "design",
+            "test-planning",
+            "ready-for-development",
+            "orchestration",
+            "development",
+            "developer-verification",
+            "testing",
+            "review",
+            "remediation",
+            "ready-for-merge",
+            "production",
+            "complete",
+            "needs-information",
+            "rejected"
+          ]
+        },
+        "risk": {
+          "enum": ["R1", "R2", "R3"]
+        },
+        "source-requests": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "branch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "worktree": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pull-request": {
+          "type": "string"
+        },
+        "base-revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "head-revision": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "required": ["prd", "technical-design", "test-plan", "adrs"],
+      "properties": {
+        "prd": {
+          "const": "PRD.md"
+        },
+        "technical-design": {
+          "const": "TECHNICAL_DESIGN.md"
+        },
+        "test-plan": {
+          "const": "TEST_PLAN.md"
+        },
+        "adrs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "required": ["prd", "architecture", "residual-risk", "testing", "review", "merge"],
+      "properties": {
+        "prd": {
+          "$ref": "#/$defs/revision-approval"
+        },
+        "architecture": {
+          "$ref": "#/$defs/revision-approval"
+        },
+        "residual-risk": {
+          "$ref": "#/$defs/residual-risk-approval"
+        },
+        "testing": {
+          "$ref": "#/$defs/head-approval"
+        },
+        "review": {
+          "$ref": "#/$defs/head-approval"
+        },
+        "merge": {
+          "type": "object",
+          "required": ["status", "head", "approved-by", "attestation-revision"],
+          "properties": {
+            "status": {
+              "$ref": "#/$defs/decision-status"
+            },
+            "head": {
+              "type": "string"
+            },
+            "approved-by": {
+              "type": "string"
+            },
+            "attestation-revision": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "decision-status": {
+      "enum": ["pending", "approved", "rejected"]
+    },
+    "revision-approval": {
+      "type": "object",
+      "required": ["status", "revision", "approved-by"],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/decision-status"
+        },
+        "revision": {
+          "type": "string"
+        },
+        "approved-by": {
+          "type": "string"
+        }
+      }
+    },
+    "residual-risk-approval": {
+      "type": "object",
+      "required": ["status", "revision", "approved-by"],
+      "properties": {
+        "status": {
+          "enum": ["not-required", "pending", "approved", "rejected"]
+        },
+        "revision": {
+          "type": "string"
+        },
+        "approved-by": {
+          "type": "string"
+        }
+      }
+    },
+    "head-approval": {
+      "type": "object",
+      "required": ["status", "head", "approved-by"],
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/decision-status"
+        },
+        "head": {
+          "type": "string"
+        },
+        "approved-by": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

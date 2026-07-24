@@ -1,0 +1,4 @@
+interface:
+  display_name: "Clowder Help"
+  short_description: "Answer questions about using Clowder"
+  default_prompt: "Explain how to use or configure Clowder from its installed documentation."

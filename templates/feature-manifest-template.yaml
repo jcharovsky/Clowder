@@ -1,0 +1,44 @@
+schema-version: 1
+feature:
+  jira-key: JIRA-123
+  slug: feature-name
+  name: Feature Name
+  lifecycle-phase: intake
+  risk: R1
+  source-requests: []
+  branch: feat/JIRA-123-feature-name
+  worktree: replace-after-setup
+  pull-request: ""
+  base-revision: replace-after-setup
+  head-revision: replace-after-setup
+artifacts:
+  prd: PRD.md
+  technical-design: TECHNICAL_DESIGN.md
+  test-plan: TEST_PLAN.md
+  adrs: []
+approvals:
+  prd:
+    status: pending
+    revision: ""
+    approved-by: ""
+  architecture:
+    status: pending
+    revision: ""
+    approved-by: ""
+  residual-risk:
+    status: not-required
+    revision: ""
+    approved-by: ""
+  testing:
+    status: pending
+    head: ""
+    approved-by: ""
+  review:
+    status: pending
+    head: ""
+    approved-by: ""
+  merge:
+    status: pending
+    head: ""
+    approved-by: ""
+    attestation-revision: ""

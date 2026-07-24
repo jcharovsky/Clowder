@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd -P)"
+# shellcheck source=lib.sh
+source "$SCRIPT_DIR/lib.sh"
+
+repo_path="$PWD"
+no_ui=false
+direct=false
+offline=false
+
+usage() {
+  cat <<'EOF'
+Usage: Clowder [--repo PATH] [--no-ui] [--direct] [--offline]
+
+Open or focus the Supacode Orchestrator tab and start the Clowder Codex session.
+EOF
+}
+
+while (($# > 0)); do
+  case "$1" in
+    --repo) repo_path=${2:?missing value for --repo}; shift 2 ;;
+    --no-ui) no_ui=true; shift ;;
+    --direct) direct=true; shift ;;
+    --offline) offline=true; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage >&2; die "unknown argument: $1" ;;
+  esac
+done
+
+repo_path="$(resolve_repo "$repo_path")"
+doctor_args=(--repo "$repo_path")
+[[ "$offline" == true ]] && doctor_args+=(--offline)
+"$SCRIPT_DIR/doctor.sh" "${doctor_args[@]}" >/dev/null
+
+if [[ "$no_ui" == true ]]; then
+  "$SCRIPT_DIR/clowder-orchestrator" --repo "$repo_path" --print
+  exit 0
+fi
+
+if [[ "$direct" == true || "$(command -v supacode || true)" == "" ]]; then
+  exec "$SCRIPT_DIR/clowder-orchestrator" --repo "$repo_path"
+fi
+
+require_command supacode
+supacode repo open "$repo_path" >/dev/null
+worktree_id="$(supacode_repo_identifier "$repo_path")"
+tab_id="$(deterministic_uuid "clowder-orchestrator:$repo_path")"
+input="$(printf '%q ' "$SCRIPT_DIR/clowder-orchestrator" --repo "$repo_path")"
+
+if supacode tab focus --worktree "$worktree_id" --tab "$tab_id" --timeout 5 >/dev/null 2>&1; then
+  info "focused Supacode Orchestrator tab for $repo_path"
+else
+  supacode tab new --worktree "$worktree_id" --id "$tab_id" --title Orchestrator --input "$input" --timeout 10
+  info "created Supacode Orchestrator tab for $repo_path"
+fi

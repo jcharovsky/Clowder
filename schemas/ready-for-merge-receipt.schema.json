@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clowder.local/schemas/ready-for-merge-receipt.schema.json",
+  "type": "object",
+  "required": [
+    "schema-version",
+    "kind",
+    "result",
+    "generated-at",
+    "repository",
+    "jira-feature",
+    "pull-request",
+    "review-evidence",
+    "reviewed-code-head",
+    "final-pull-request-head",
+    "attestation-revision",
+    "required-checks"
+  ],
+  "properties": {
+    "schema-version": {
+      "const": 1
+    },
+    "kind": {
+      "const": "clowder-ready-for-merge-receipt"
+    },
+    "result": {
+      "const": "passed"
+    },
+    "generated-at": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[^/]+/[^/]+$"
+    },
+    "jira-feature": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9]+-[0-9]+$"
+    },
+    "pull-request": {
+      "type": "string",
+      "pattern": "^https://github\\.com/[^/]+/[^/]+/pull/[0-9]+$"
+    },
+    "review-evidence": {
+      "enum": ["clowder-attestation", "github-approval"]
+    },
+    "reviewed-code-head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "final-pull-request-head": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "attestation-revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "required-checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "result"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result": {
+            "const": "passed"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

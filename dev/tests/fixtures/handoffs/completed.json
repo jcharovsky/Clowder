@@ -1,0 +1,13 @@
+{
+  "status": "completed",
+  "sources": [
+    "PRD.md"
+  ],
+  "outputs": ["TECHNICAL_DESIGN.md"],
+  "evidence": ["test-output.txt"],
+  "decisions": [],
+  "assumptions": [],
+  "risks": [],
+  "questions": [],
+  "next_gate": "ready-for-development"
+}
